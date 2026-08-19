@@ -1,19 +1,25 @@
 import os
-import tempfile
-import streamlit as st
 import gc
+import json
 import uuid
+import sqlite3
 
+import streamlit as st
 from dotenv import load_dotenv
 from rag_pipeline import build_chain, strip_think
 
 load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PDF_DIR = os.path.join(BASE_DIR, "data", "pdfs")
+DB_PATH = os.path.join(BASE_DIR, "pdfquery.db")
+os.makedirs(PDF_DIR, exist_ok=True)
 
+CHAINS = {}  
 st.set_page_config(
     page_title="PDFQUERY",
     page_icon="💬",
     layout="centered",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 st.markdown(
@@ -41,7 +47,6 @@ st.markdown(
         padding-bottom: 7rem;
         max-width: 950px;
     }
-
 
     .brand {
         position: fixed;
@@ -204,6 +209,46 @@ st.markdown(
         background: #1d2029;
     }
 
+    /* --- NEW: sidebar history styling --- */
+    [data-testid="stSidebar"] {
+        background: #151821;
+    }
+
+    .stSidebar .stButton > button {
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .conv-doc {
+        color: #8d9098;
+        font-size: .72rem;
+        margin: -0.4rem 0 0.5rem 0.2rem;
+    }
+
+    /* --- NEW: file chip (like the React app) --- */
+    .file-chip {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        padding: .55rem .8rem;
+        border-radius: 12px;
+        border: 1px solid #3b82f6;
+        background: #1a2233;
+        margin: 0 auto .6rem;
+        width: fit-content;
+        max-width: 100%;
+    }
+
+    .file-name {
+        font-size: .85rem;
+        color: #e8e8ea;
+    }
+
+    .file-status {
+        font-size: .72rem;
+        color: #60a5fa;
+    }
+
     @media (max-width: 700px) {
 
         .block-container {
@@ -229,25 +274,148 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+def init_db():
+    conn = get_db()
+    conn.execute("""CREATE TABLE IF NOT EXISTS conversations (
+        id TEXT PRIMARY KEY, title TEXT, doc_name TEXT,
+        created_at TEXT DEFAULT (datetime('now')))""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS messages (
+        id TEXT PRIMARY KEY, conv_id TEXT, role TEXT, content TEXT, sources TEXT)""")
+    conn.commit()
+    conn.close()
 
-if "chain" not in st.session_state:
-    st.session_state.chain = None
+init_db()
 
-if "vectorstore" not in st.session_state:
-    st.session_state.vectorstore = None
+def list_conversations():
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT id, title, doc_name FROM conversations ORDER BY created_at DESC"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
-if "doc_name" not in st.session_state:
-    st.session_state.doc_name = None
+def get_conversation(conv_id):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT id, title, doc_name FROM conversations WHERE id = ?", (conv_id,)
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def get_messages(conv_id):
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT role, content, sources FROM messages WHERE conv_id = ? ORDER BY rowid",
+        (conv_id,),
+    ).fetchall()
+    conn.close()
+    return [
+        {"role": r["role"], "content": r["content"],
+         "sources": json.loads(r["sources"] or "[]")}
+        for r in rows
+    ]
+
+def create_conversation():
+    conv_id = uuid.uuid4().hex
+    conn = get_db()
+    conn.execute("INSERT INTO conversations (id, title) VALUES (?, ?)",
+                 (conv_id, "New chat"))
+    conn.commit()
+    conn.close()
+    return conv_id
+
+def delete_conversation(conv_id):
+    if conv_id in CHAINS:
+        try:
+            CHAINS[conv_id][1].delete_collection()
+        except Exception:
+            pass
+        CHAINS.pop(conv_id)
+    try:
+        os.remove(os.path.join(PDF_DIR, f"{conv_id}.pdf"))
+    except OSError:
+        pass
+    conn = get_db()
+    conn.execute("DELETE FROM messages WHERE conv_id = ?", (conv_id,))
+    conn.execute("DELETE FROM conversations WHERE id = ?", (conv_id,))
+    conn.commit()
+    conn.close()
+
+def add_message(conv_id, role, content, sources=None):
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO messages (id, conv_id, role, content, sources) VALUES (?, ?, ?, ?, ?)",
+        (uuid.uuid4().hex, conv_id, role, content, json.dumps(sources or [])))
+    conn.commit()
+    conn.close()
+
+def set_title(conv_id, title):
+    conn = get_db()
+    conn.execute("UPDATE conversations SET title = ? WHERE id = ? AND title = 'New chat'",
+                 (title, conv_id))
+    conn.commit()
+    conn.close()
+
+def set_doc_name(conv_id, name):
+    conn = get_db()
+    conn.execute("UPDATE conversations SET doc_name = ? WHERE id = ?", (name, conv_id))
+    conn.commit()
+    conn.close()
+
+def clear_messages(conv_id):
+    conn = get_db()
+    conn.execute("DELETE FROM messages WHERE conv_id = ?", (conv_id,))
+    conn.commit()
+    conn.close()
+
+def get_chain(conv_id):
+    """Returns (chain, vectorstore), rebuilding from the saved PDF if needed."""
+    if conv_id in CHAINS:
+        return CHAINS[conv_id]
+    pdf_path = os.path.join(PDF_DIR, f"{conv_id}.pdf")
+    if not os.path.exists(pdf_path):
+        return None
+    CHAINS[conv_id] = build_chain(pdf_path)
+    return CHAINS[conv_id]
+
+st.session_state.setdefault("active_id", None)
+active_id = st.session_state.active_id
+active = get_conversation(active_id) if active_id else None
+messages = get_messages(active_id) if active_id else []
+
+with st.sidebar:
+    if st.button("+ New chat", use_container_width=True):
+        st.session_state.active_id = create_conversation()
+        st.rerun()
+    st.write("")
+    for conv in list_conversations():
+        c1, c2 = st.columns([7, 1])
+        with c1:
+            if st.button(conv["title"], key=f"open_{conv['id']}",
+                         use_container_width=True):
+                st.session_state.active_id = conv["id"]
+                st.rerun()
+        with c2:
+            if st.button("×", key=f"del_{conv['id']}"):
+                if st.session_state.active_id == conv["id"]:
+                    st.session_state.active_id = None
+                delete_conversation(conv["id"])
+                st.rerun()
+        if conv["doc_name"]:
+            st.markdown(f'<div class="conv-doc">{conv["doc_name"]}</div>',
+                        unsafe_allow_html=True)
 
 st.markdown(
     '<div class="brand">PDFQUERY</div>',
     unsafe_allow_html=True
 )
 
-if not st.session_state.messages:
+if not messages:
 
     st.markdown(
         """
@@ -259,13 +427,13 @@ if not st.session_state.messages:
         unsafe_allow_html=True
     )
 
-    if st.session_state.chain:
+    if active and active["doc_name"]:
 
         st.markdown(
             f"""
             <div class="sub-greeting">
                 Ready — ask anything about
-                <b>{st.session_state.doc_name}</b>
+                <b>{active["doc_name"]}</b>
             </div>
             </div>
             """,
@@ -285,7 +453,7 @@ if not st.session_state.messages:
             unsafe_allow_html=True
         )
 
-for msg in st.session_state.messages:
+for msg in messages:
 
     with st.chat_message(msg["role"]):
 
@@ -303,6 +471,13 @@ for msg in st.session_state.messages:
                         f"[{i}] {source[:300]}..."
                     )
 
+if active and active["doc_name"]:
+    st.markdown(
+        f'<div class="file-chip"><span>📄</span>'
+        f'<span class="file-name">{active["doc_name"]}</span>'
+        f'<span class="file-status">Ready</span></div>',
+        unsafe_allow_html=True,
+    )
 
 plus_col, chat_col = st.columns(
     [0.65, 12],
@@ -321,15 +496,14 @@ with plus_col:
 
         st.write("")
 
-        if st.button(
+        if active_id and st.button(
             "Clear conversation",
             use_container_width=True
         ):
 
-            st.session_state.messages = []
+            clear_messages(active_id)
 
             st.rerun()
-
 
 with chat_col:
 
@@ -337,66 +511,53 @@ with chat_col:
         "Ask anything"
     )
 
+if uploaded_file is not None:
 
-if (
-    uploaded_file is not None
-    and uploaded_file.name != st.session_state.doc_name
-):
+    conv_id = active_id or create_conversation()
+    st.session_state.active_id = conv_id
+    current = get_conversation(conv_id)
 
-    if st.session_state.vectorstore is not None:
+    if current["doc_name"] != uploaded_file.name:
 
-        try:
-            st.session_state.vectorstore.delete_collection()
-        except Exception:
-            pass
+        if conv_id in CHAINS:
 
-        st.session_state.vectorstore = None
-        st.session_state.chain = None
+            try:
+                CHAINS[conv_id][1].delete_collection()
+            except Exception:
+                pass
 
-        gc.collect()
+            CHAINS.pop(conv_id)
 
-    st.session_state.messages = []
+            gc.collect()
 
-    st.session_state.doc_name = uploaded_file.name
+        pdf_path = os.path.join(PDF_DIR, f"{conv_id}.pdf")
 
-    tmp_path = os.path.join(
-        tempfile.gettempdir(),
-        f"pdfquery_{uuid.uuid4().hex}.pdf"
-    )
+        with open(pdf_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
 
-    with open(tmp_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+        with st.spinner("Reading your PDF..."):
 
-    with st.spinner("Reading your PDF..."):
+            try:
+                get_chain(conv_id)
 
-        try:
+            except Exception as e:
 
-            (
-                st.session_state.chain,
-                st.session_state.vectorstore
-            ) = build_chain(tmp_path)
+                st.error(
+                    f"Could not process the PDF: {str(e)}"
+                )
 
-        except Exception as e:
+                st.stop()
 
-            st.error(
-                f"Could not process the PDF: {str(e)}"
-            )
+        set_doc_name(conv_id, uploaded_file.name)
 
-            st.session_state.chain = None
-            st.session_state.vectorstore = None
-
-            st.stop()
-
-    try:
-        os.remove(tmp_path)
-    except OSError:
-        pass
-
-    st.rerun()
+        st.rerun()
 
 if question:
 
-    if not st.session_state.chain:
+    conv_id = active_id or create_conversation()
+    st.session_state.active_id = conv_id
+
+    if not os.path.exists(os.path.join(PDF_DIR, f"{conv_id}.pdf")):
 
         st.warning(
             "Please upload a PDF first using the ＋ button."
@@ -404,45 +565,20 @@ if question:
 
     else:
 
-        st.session_state.messages.append(
-            {
-                "role": "user",
-                "content": question
-            }
-        )
+        add_message(conv_id, "user", question)
 
-        with st.chat_message("user"):
+        with st.spinner("Thinking..."):
 
-            st.markdown(question)
+            chain, _ = get_chain(conv_id)  # rebuilds index for old chats automatically
 
-        with st.chat_message("assistant"):
+            result = chain.invoke(question)
 
-            with st.spinner("Thinking..."):
+            docs = result["context"]
+            answer = strip_think(result["answer"])
 
-                result = st.session_state.chain.invoke(question)
+        add_message(conv_id, "assistant", answer,
+                    [d.page_content for d in docs])
 
-                docs = result["context"]
-                answer = strip_think(result["answer"])
+        set_title(conv_id, question[:40])
 
-            st.markdown(answer)
-
-            with st.expander("Sources"):
-
-                for i, doc in enumerate(
-                    docs, 1
-                ):
-                    st.caption(
-                        f"[{i}] "
-                        f"{doc.page_content[:300]}..."
-                    )
-
-        st.session_state.messages.append(
-            {
-                "role": "assistant",
-                "content": answer,
-                "sources": [
-                    d.page_content
-                    for d in docs
-                ],
-            }
-        )
+        st.rerun()
