@@ -2,31 +2,32 @@ name: CI/CD — Build & Push Docker Images
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: abdulahad64146
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build & push backend image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/pdfquery-backend:latest
+          tags: abdulahad64146/pdfquery-backend:latest
 
       - name: Build & push frontend image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./pdfquery-frontend
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/pdfquery-frontend:latest
+          tags: abdulahad64146/pdfquery-frontend:latest
