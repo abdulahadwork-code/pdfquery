@@ -1,0 +1,69 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  background: #0d0f14;
+  color: #e8e8ea;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.app { display: flex; height: 100vh; }
+
+/* ---------- Sidebar ---------- */
+.sidebar { width: 260px; flex-shrink: 0; background: #151821; border-right: 1px solid #262a34; display: flex; flex-direction: column; padding: 1rem; gap: 1rem; }
+.sidebar-brand { font-weight: 800; letter-spacing: .5px; font-size: 1.1rem; }
+.new-chat { background: #232630; color: #eee; border: 1px solid #2d303a; border-radius: 10px; padding: .6rem; cursor: pointer; }
+.new-chat:hover { background: #2a2e3a; }
+.conv-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: .35rem; }
+.conv-item { display: flex; justify-content: space-between; align-items: center; padding: .55rem .6rem; border-radius: 10px; cursor: pointer; }
+.conv-item:hover { background: #1d212c; }
+.conv-item.active { background: #232630; }
+.conv-text { display: flex; flex-direction: column; overflow: hidden; }
+.conv-title { font-size: .9rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.conv-doc { font-size: .72rem; color: #8d9098; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.conv-del { background: none; border: none; color: #8d9098; cursor: pointer; font-size: 1rem; visibility: hidden; }
+.conv-item:hover .conv-del { visibility: visible; }
+
+/* ---------- Main: FULL width, so the scrollbar sits at the window edge ---------- */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 1rem 1.2rem; }
+
+.home { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; max-width: 950px; width: 100%; margin: 0 auto; }
+.greeting { font-size: 2.1rem; font-weight: 650; }
+.sub-greeting { color: #8d9098; margin-top: .6rem; }
+
+/* ---------- Chat: full-width scroll container + dark thin scrollbar ---------- */
+.chat { flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 1rem; }
+.chat::-webkit-scrollbar { width: 8px; }
+.chat::-webkit-scrollbar-thumb { background: #2d303a; border-radius: 4px; }
+.chat::-webkit-scrollbar-track { background: transparent; }
+
+/* Messages centered in a 950px column; the 75% cap lives on the WRAPPER now */
+.msg { width: 100%; max-width: 950px; margin: 0 auto; display: flex; }
+.msg.user { justify-content: flex-end; }
+.msg.assistant { justify-content: flex-start; }
+.msg > div { max-width: 75%; min-width: 0; display: flex; flex-direction: column; }
+.bubble { width: fit-content; max-width: 100%; padding: .8rem 1rem; border-radius: 16px; white-space: pre-wrap; overflow-wrap: break-word; line-height: 1.5; }
+.msg.user .bubble { background: #232630; }
+.msg.assistant .bubble { background: transparent; border: 1px solid #262a34; }
+.bubble.thinking { color: #8d9098; }
+.sources { margin-top: .5rem; font-size: .8rem; color: #8d9098; }
+.sources p { margin-top: .4rem; overflow-wrap: break-word; }
+
+/* ---------- File chip ---------- */
+.file-chip { display: flex; align-items: center; gap: .6rem; padding: .55rem .8rem; border-radius: 12px; border: 1px solid #2d303a; background: #171a22; margin: 0 auto .6rem; width: fit-content; max-width: 950px; }
+.file-chip.uploading { opacity: .55; }
+.file-chip.ready { border-color: #3b82f6; background: #1a2233; }
+.file-name { font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+.file-status { font-size: .72rem; color: #8d9098; }
+.file-chip.ready .file-status { color: #60a5fa; }
+
+.notice { color: #f0b429; font-size: .85rem; margin: .4rem auto; text-align: center; max-width: 950px; width: 100%; }
+
+/* ---------- Composer ---------- */
+.composer { display: flex; align-items: center; gap: .6rem; padding-top: .6rem; max-width: 950px; width: 100%; margin: 0 auto; }
+.plus { width: 48px; height: 48px; border-radius: 14px; border: 1px solid #343842; background: #151821; color: #f2f2f2; font-size: 1.3rem; cursor: pointer; flex-shrink: 0; }
+.plus:hover { background: #1c202a; }
+.chat-input { flex: 1; min-width: 0; background: #232630; border: 1px solid #2d303a; border-radius: 17px; color: #eee; padding: 1rem 1.2rem; font-size: 1rem; outline: none; min-height: 58px; }
+.chat-input:focus { border-color: #444853; }
+.send { width: 48px; height: 48px; border-radius: 50%; border: none; background: #3b82f6; color: white; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; }
+.send:disabled { background: #2d303a; color: #8d9098; }

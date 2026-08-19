@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.git/
+.streamlit/
+pdfquery-frontend/node_modules/
+pdfquery-frontend/dist/
+pdfquery.db
+eval_results.csv
