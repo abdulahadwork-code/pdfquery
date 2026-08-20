@@ -26,10 +26,6 @@ st.markdown(
     """
     <style>
 
-   /* =========================================================
-   GLOBAL
-   ========================================================= */
-
 #MainMenu,
 header,
 footer {
@@ -46,12 +42,6 @@ footer {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
 }
-
-
-/* =========================================================
-   BRAND
-   ========================================================= */
-   
    section[data-testid="stMain"] .block-container,
 section.main .block-container,
 div[data-testid="stMainBlockContainer"],
@@ -74,11 +64,6 @@ div[data-testid="stMainBlockContainer"],
     z-index: 999999;
 }
 
-
-/* =========================================================
-   SIDEBAR
-   ========================================================= */
-
 [data-testid="stSidebar"] {
     background: #151821;
     border-right: 1px solid #242731;
@@ -87,8 +72,6 @@ div[data-testid="stMainBlockContainer"],
 [data-testid="stSidebar"] .block-container {
     padding-top: 1.2rem;
 }
-
-
 /* New chat */
 
 [data-testid="stSidebar"] .st-key-new_chat_btn button {
@@ -112,8 +95,6 @@ div[data-testid="stMainBlockContainer"],
 
     border-color: #4a4f5c;
 }
-
-
 /* Sidebar section title */
 
 .sidebar-section {
@@ -130,8 +111,6 @@ div[data-testid="stMainBlockContainer"],
 
     text-transform: uppercase;
 }
-
-
 /* Conversation buttons */
 
 [data-testid="stSidebar"] .stButton > button {
@@ -161,8 +140,6 @@ div[data-testid="stMainBlockContainer"],
 
     color: #f4f4f5;
 }
-
-
 /* Delete buttons */
 
 [data-testid="stSidebar"] .st-key-del_ button {
@@ -178,11 +155,6 @@ div[data-testid="stMainBlockContainer"],
 
     background: transparent;
 }
-
-
-/* =========================================================
-   EMPTY STATE
-   ========================================================= */
 
 .empty-state {
 
@@ -201,7 +173,6 @@ div[data-testid="stMainBlockContainer"],
     padding: 2rem;
 }
 
-
 .empty-title {
 
     font-size: 2rem;
@@ -215,7 +186,6 @@ div[data-testid="stMainBlockContainer"],
     margin-bottom: .65rem;
 }
 
-
 .empty-description {
 
     max-width: 520px;
@@ -226,12 +196,6 @@ div[data-testid="stMainBlockContainer"],
 
     line-height: 1.6;
 }
-
-
-/* =========================================================
-   DOCUMENT HEADER
-   ========================================================= */
-
 .document-card {
 
     display: flex;
@@ -250,7 +214,6 @@ div[data-testid="stMainBlockContainer"],
 
     border-radius: 12px;
 }
-
 
 .document-icon {
 
@@ -271,14 +234,12 @@ div[data-testid="stMainBlockContainer"],
     font-size: 1.05rem;
 }
 
-
 .document-info {
 
     min-width: 0;
 
     flex: 1;
 }
-
 
 .document-name {
 
@@ -295,7 +256,6 @@ div[data-testid="stMainBlockContainer"],
     text-overflow: ellipsis;
 }
 
-
 .document-meta {
 
     margin-top: 3px;
@@ -305,7 +265,6 @@ div[data-testid="stMainBlockContainer"],
     font-size: .72rem;
 }
 
-
 .document-status {
 
     color: #6ee7a0;
@@ -314,11 +273,6 @@ div[data-testid="stMainBlockContainer"],
 
     white-space: nowrap;
 }
-
-
-/* =========================================================
-   CHAT
-   ========================================================= */
 
 [data-testid="stChatMessage"] {
 
@@ -338,8 +292,6 @@ div[data-testid="stMainBlockContainer"],
 
     line-height: 1.7;
 }
-
-
 /* Hide default avatars */
 
 [data-testid="stChatMessageAvatarUser"],
@@ -349,21 +301,12 @@ div[data-testid="stMainBlockContainer"],
     display: none !important;
 }
 
-
-/* User message */
-
 [data-testid="stChatMessage"]:has(
     [data-testid="stChatMessageContent"]
 ) {
 
     max-width: 100%;
 }
-
-
-/* =========================================================
-   MESSAGE LABELS
-   ========================================================= */
-
 .message-label {
 
     color: #8b8f9a;
@@ -377,22 +320,16 @@ div[data-testid="stMainBlockContainer"],
     margin-bottom: .35rem;
 }
 
-
 .user-label {
 
     color: #a8abb5;
 }
-
 
 .assistant-label {
 
     color: #7aa2ff;
 }
 
-
-/* =========================================================
-   SOURCES
-   ========================================================= */
 
 .source-header {
 
@@ -406,7 +343,6 @@ div[data-testid="stMainBlockContainer"],
 
     margin-bottom: .5rem;
 }
-
 
 .source-card {
 
@@ -431,16 +367,10 @@ div[data-testid="stMainBlockContainer"],
     font-size: .75rem;
 }
 
-
 .source-icon {
 
     font-size: .8rem;
 }
-
-
-/* =========================================================
-   FILE CHIP ABOVE COMPOSER
-   ========================================================= */
 
 .st-key-file_chip {
     position: sticky;
@@ -498,10 +428,6 @@ div[data-testid="stMainBlockContainer"],
     margin-top: 2px;
 }
 
-/* =========================================================
-   COMPOSER
-   ========================================================= */
-
 .st-key-composer_bar {
 
     position: sticky;
@@ -526,9 +452,6 @@ div[data-testid="stMainBlockContainer"],
     gap: 10px !important;
 }
 
-
-/* Upload column */
-
 .st-key-composer_bar
 [data-testid="stHorizontalBlock"] > div:first-child {
 
@@ -543,8 +466,6 @@ div[data-testid="stMainBlockContainer"],
     padding: 0 !important;
 }
 
-/* Input column */
-
 .st-key-composer_bar
 [data-testid="stHorizontalBlock"] > div:nth-child(2) {
 
@@ -554,11 +475,6 @@ div[data-testid="stMainBlockContainer"],
 
     padding: 0 !important;
 }
-
-
-/* =========================================================
-   UPLOAD BUTTON
-   ========================================================= */
 
 .st-key-composer_bar
 [data-testid="stFileUploaderDropzone"] {
@@ -581,7 +497,6 @@ div[data-testid="stMainBlockContainer"],
 
     overflow: visible !important;
 }
-
 .st-key-composer_bar
 [data-testid="stFileUploaderDropzone"] button {
 
@@ -610,7 +525,6 @@ div[data-testid="stMainBlockContainer"],
     box-shadow: none !important;
 }
 
-
 .st-key-composer_bar
 [data-testid="stFileUploaderDropzone"] button::after {
 
@@ -633,7 +547,6 @@ div[data-testid="stMainBlockContainer"],
     font-weight: 400;
 }
 
-
 .st-key-composer_bar
 [data-testid="stFileUploaderDropzone"] button:hover {
 
@@ -642,19 +555,11 @@ div[data-testid="stMainBlockContainer"],
     border-color: #4a4f5c !important;
 }
 
-
-/* Hide Streamlit file row */
-
 .st-key-composer_bar
 [data-testid="stFileUploaderFile"] {
 
     display: none !important;
 }
-
-
-/* =========================================================
-   CHAT INPUT
-   ========================================================= */
 
 .st-key-composer_bar
 [data-testid="stChatInput"] {
@@ -709,13 +614,11 @@ div[data-testid="stMainBlockContainer"],
     box-sizing: border-box !important;
 }
 
-
 .st-key-composer_bar
 [data-testid="stChatInput"] textarea::placeholder {
 
     color: #858994 !important;
 }
-
 
 .st-key-composer_bar
 [data-testid="stChatInput"] > div:focus-within {
@@ -724,9 +627,6 @@ div[data-testid="stMainBlockContainer"],
 
     box-shadow: 0 0 0 1px #414550 !important;
 }
-
-
-/* Send button */
 
 .st-key-composer_bar
 [data-testid="stChatInput"] button {
@@ -749,11 +649,6 @@ div[data-testid="stMainBlockContainer"],
 
     border: none !important;
 }
-
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
 
 @media (max-width: 700px) {
 
@@ -796,13 +691,10 @@ div[data-testid="stMainBlockContainer"],
     """,
     unsafe_allow_html=True
 )
-
-
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
 
 def init_db():
     conn = get_db()
@@ -814,9 +706,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 init_db()
-
 
 def list_conversations():
     conn = get_db()
@@ -826,7 +716,6 @@ def list_conversations():
     conn.close()
     return [dict(r) for r in rows]
 
-
 def get_conversation(conv_id):
     conn = get_db()
     row = conn.execute(
@@ -834,7 +723,6 @@ def get_conversation(conv_id):
     ).fetchone()
     conn.close()
     return dict(row) if row else None
-
 
 def get_messages(conv_id):
     conn = get_db()
@@ -848,8 +736,6 @@ def get_messages(conv_id):
          "sources": json.loads(r["sources"] or "[]")}
         for r in rows
     ]
-
-
 def create_conversation():
     conv_id = uuid.uuid4().hex
     conn = get_db()
@@ -858,8 +744,6 @@ def create_conversation():
     conn.commit()
     conn.close()
     return conv_id
-
-
 def delete_conversation(conv_id):
     chains = st.session_state.chains
     if conv_id in chains:
@@ -877,8 +761,6 @@ def delete_conversation(conv_id):
     conn.execute("DELETE FROM conversations WHERE id = ?", (conv_id,))
     conn.commit()
     conn.close()
-
-
 def add_message(conv_id, role, content, sources=None):
     conn = get_db()
     conn.execute(
@@ -887,7 +769,6 @@ def add_message(conv_id, role, content, sources=None):
     conn.commit()
     conn.close()
 
-
 def set_title(conv_id, title):
     conn = get_db()
     conn.execute("UPDATE conversations SET title = ? WHERE id = ? AND title = 'New chat'",
@@ -895,13 +776,11 @@ def set_title(conv_id, title):
     conn.commit()
     conn.close()
 
-
 def set_doc_name(conv_id, name):
     conn = get_db()
     conn.execute("UPDATE conversations SET doc_name = ? WHERE id = ?", (name, conv_id))
     conn.commit()
     conn.close()
-
 
 def clear_messages(conv_id):
     conn = get_db()
@@ -909,21 +788,8 @@ def clear_messages(conv_id):
     conn.commit()
     conn.close()
 
-
 def get_chain(conv_id):
-    """
-    Returns (chain, vectorstore), rebuilding from the saved PDF if needed.
 
-    BUG FIX: this used to cache into a module-level `CHAINS = {}` dict.
-    Streamlit reruns the entire script top-to-bottom on every interaction
-    (every click, every chat message), which means a plain top-level
-    variable gets reassigned to a fresh empty dict on every single rerun.
-    The cache was never actually caching anything — every question rebuilt
-    the whole RAG pipeline (re-chunk, re-embed, re-index BM25, reload the
-    reranker) from scratch, which is almost certainly why this felt "pretty
-    much broken" / slow. st.session_state persists across reruns within a
-    session, so the cache now actually holds.
-    """
     chains = st.session_state.chains
     if conv_id in chains:
         return chains[conv_id]
@@ -936,7 +802,6 @@ def get_chain(conv_id):
 
 st.session_state.setdefault("active_id", None)
 st.session_state.setdefault("chains", {})
-
 active_id = st.session_state.active_id
 active = get_conversation(active_id) if active_id else None
 messages = get_messages(active_id) if active_id else []
@@ -948,7 +813,6 @@ with st.sidebar:
         'margin-bottom:10px;">YOUR DOCUMENT ASSISTANT</div>',
         unsafe_allow_html=True
     )
-
     if st.button(
         "+  New chat",
         use_container_width=True,
@@ -956,7 +820,6 @@ with st.sidebar:
     ):
         st.session_state.active_id = create_conversation()
         st.rerun()
-
     st.markdown(
         '<div class="sidebar-section">Chats</div>',
         unsafe_allow_html=True
@@ -1030,11 +893,6 @@ if not messages:
     unsafe_allow_html=True
 )
 
-
-# =========================================================
-# EMPTY STATE
-# =========================================================
-
 if not messages and not active:
 
     st.markdown(
@@ -1053,7 +911,6 @@ if not messages and not active:
         unsafe_allow_html=True
     )
 
-
 elif not messages and active:
 
     st.markdown(
@@ -1070,11 +927,6 @@ elif not messages and active:
         ),
         unsafe_allow_html=True
     )
-
-
-# =========================================================
-# CONVERSATION
-# =========================================================
 
 for msg in messages:
 
@@ -1095,10 +947,7 @@ for msg in messages:
             )
 
             st.markdown(msg["content"])
-
-
     else:
-
         with st.chat_message(
             "assistant",
             avatar=None
@@ -1125,7 +974,6 @@ for msg in messages:
                     unsafe_allow_html=True
                 )
 
-                # Show only useful source previews
                 for i, source in enumerate(
                     sources[:5],
                     1
@@ -1156,14 +1004,7 @@ for msg in messages:
                         unsafe_allow_html=True
                     )
 
-# =========================================================
-# THINKING SLOT (spinner appears here, above the composer)
-# =========================================================
-
 thinking_slot = st.container()
-# =========================================================
-# CURRENT PDF CHIP
-# =========================================================
 
 if active and active["doc_name"]:
 
@@ -1185,11 +1026,6 @@ if active and active["doc_name"]:
             ),
             unsafe_allow_html=True
         )
-
-
-# =========================================================
-# COMPOSER
-# =========================================================
 
 composer = st.container(
     key="composer_bar"

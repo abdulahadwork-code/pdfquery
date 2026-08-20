@@ -1,10 +1,3 @@
-"""
-Core PDFQUERY RAG pipeline: PDF loading, hybrid retrieval + reranking, and
-the QA chain. Pulled out of app.py so the Streamlit UI and the evaluation
-harness (evaluate.py) both build the pipeline from one place — an eval
-report is only meaningful if it's testing the same code path users hit.
-"""
-
 import os
 import uuid
 
@@ -15,17 +8,12 @@ from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.retrievers import BM25Retriever
 from langchain_chroma import Chroma
 from langchain_groq import ChatGroq
-# NOTE: LangChain 1.0 split these out of the main `langchain` package into
-# `langchain-classic` (pip install langchain-classic). If you're on an older
-# langchain (<1.0), use `from langchain.retrievers import ...` instead.
 from langchain_classic.retrievers import EnsembleRetriever, ContextualCompressionRetriever
 from langchain_classic.retrievers.document_compressors import FlashrankRerank
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel, RunnableLambda
 from langchain_core.output_parsers import StrOutputParser
 
-# Pydantic forward-ref issue seen on some langchain/flashrank version pairs —
-# harmless no-op when not needed, so it's safe to always call this.
 FlashrankRerank.model_rebuild()
 
 GROQ_KEY = os.environ.get("GROQ_API_KEY")
@@ -79,9 +67,6 @@ def load_pdf(pdf_path):
         for i, page in enumerate(reader.pages)
     ]
 
-    # Scanned / image-only pages return "" from extract_text(). Indexing
-    # empty documents pollutes the vector store and wastes embedding calls,
-    # so drop them here.
     docs = [d for d in docs if d.page_content.strip()]
 
     return docs
@@ -118,10 +103,6 @@ def build_chain(pdf_path):
         chunk_overlap=200
     ).split_documents(docs)
 
-    # OllamaEmbeddings requires a locally running Ollama server, which won't
-    # exist on most deployment targets (Streamlit Cloud, etc.) and will hang
-    # or crash there. FastEmbed runs a local ONNX model with no external
-    # service required, so it works the same in dev and prod.
     embeddings = FastEmbedEmbeddings()
 
     collection_name = f"pdfquery_{uuid.uuid4().hex}"
@@ -132,14 +113,6 @@ def build_chain(pdf_path):
         collection_name=collection_name
     )
 
-    # --- Hybrid retrieval ---------------------------------------------
-    # Dense (embedding) search alone misses exact keyword/number/name matches
-    # that a user's question quotes verbatim from the PDF (e.g. clause
-    # numbers, product codes, proper nouns). BM25 is a sparse, term-frequency
-    # retriever that's strong exactly where dense search is weak, so we run
-    # both and merge results with EnsembleRetriever (Reciprocal Rank Fusion).
-    # Each side pulls a wider candidate pool (k=8) than we'll actually use,
-    # since the reranker below narrows it back down to the best 4.
     bm25_retriever = BM25Retriever.from_documents(chunks)
     bm25_retriever.k = 8
 
@@ -149,15 +122,8 @@ def build_chain(pdf_path):
 
     hybrid_retriever = EnsembleRetriever(
         retrievers=[bm25_retriever, dense_retriever],
-        weights=[0.4, 0.6],  # favor semantic match slightly, keyword still counts
+        weights=[0.4, 0.6],  
     )
-
-    # --- Reranking -------------------------------------------------------
-    # EnsembleRetriever's fusion score is a cheap heuristic (rank position,
-    # not relevance). A cross-encoder reranker actually reads the query
-    # against each candidate and scores true relevance. FlashRank runs a
-    # small ONNX cross-encoder locally — no GPU, no API key, no torch — so
-    # it stays deployment-friendly.
     compressor = FlashrankRerank(model="ms-marco-MiniLM-L-12-v2", top_n=4)
 
     retriever = ContextualCompressionRetriever(
@@ -169,14 +135,10 @@ def build_chain(pdf_path):
         model="qwen/qwen3.6-27b",
         api_key=GROQ_KEY,
         temperature=0,
-        # ChatGroq validates this as an explicit field now — passing it
-        # inside model_kwargs (as before) raises a pydantic validation
-        # error asking for exactly this.
+
         reasoning_effort="none",
     )
 
-    # Single retrieval per question — returns both the answer and the
-    # source docs together instead of invoking the retriever twice.
     chain = (
         RunnableParallel(
             question=RunnablePassthrough(),
