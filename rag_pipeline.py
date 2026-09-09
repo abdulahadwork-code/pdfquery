@@ -135,7 +135,7 @@ def build_chain(pdf_path):
         model="qwen/qwen3.6-27b",
         api_key=GROQ_KEY,
         temperature=0,
-
+        max_tokens=800,
         reasoning_effort="none",
     )
 
